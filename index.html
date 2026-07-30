@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QLanalyser 产品原型</title>
+  <link rel="icon" href="assets/qlanalyser-logo.png">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body { display: grid; grid-template-rows: 60px 34px minmax(0, 1fr); overflow: hidden; color: #243447; background: #eef2f6; font-family: "Microsoft YaHei", "Segoe UI", sans-serif; }
+    header { display: flex; align-items: center; gap: 18px; padding: 0 24px; border-bottom: 1px solid #d9e1ea; background: #fff; }
+    .brand { min-width: 210px; display: flex; align-items: center; gap: 10px; }
+    .brand img { width: 34px; height: 34px; object-fit: contain; }
+    .brand strong { color: #135ea7; font-size: 17px; }
+    .build { color: #748292; font-size: 12px; }
+    nav { display: flex; align-self: stretch; margin-left: auto; }
+    nav a { min-width: 126px; display: grid; place-items: center; padding: 0 16px; border-bottom: 3px solid transparent; color: #5b6876; font-size: 14px; text-decoration: none; }
+    nav a:hover { color: #176fc3; background: #f5f9fd; }
+    nav a[aria-current="page"] { border-bottom-color: #176fc3; color: #176fc3; background: #eef6ff; font-weight: 600; }
+    .boundary { display: flex; align-items: center; justify-content: center; padding: 0 20px; border-bottom: 1px solid #e6c567; color: #69511d; background: #fff7d9; font-size: 12px; text-align: center; }
+    iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+    @media (max-width: 720px) {
+      body { grid-template-rows: auto auto minmax(0, 1fr); }
+      header { min-height: 104px; align-items: stretch; flex-wrap: wrap; gap: 0; padding: 10px 14px 0; }
+      .brand { width: 100%; min-width: 0; }
+      .build { margin-left: auto; align-self: center; }
+      nav { width: 100%; margin-left: 0; }
+      nav a { min-width: 0; min-height: 46px; flex: 1; }
+      .boundary { min-height: 46px; padding-block: 7px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="assets/qlanalyser-logo.png" alt="">
+      <strong>QLanalyser 产品原型</strong>
+    </div>
+    <span class="build">legacy r15 / qEEG r46</span>
+    <nav aria-label="原型模块">
+      <a href="legacy.html" target="prototype-frame" aria-current="page">PC 分析工作台</a>
+      <a href="qeeg.html" target="prototype-frame">qEEG 工作台</a>
+    </nav>
+  </header>
+  <div class="boundary">确定性非患者示例数据；浏览器未执行 PC 文件、数据库、算法或硬件操作，不用于临床判断。</div>
+  <iframe name="prototype-frame" src="legacy.html" title="QLanalyser 产品原型"></iframe>
+  <script>
+    const tabs = [...document.querySelectorAll("nav a")];
+    tabs.forEach((tab) => tab.addEventListener("click", () => {
+      tabs.forEach((item) => item.removeAttribute("aria-current"));
+      tab.setAttribute("aria-current", "page");
+    }));
+  </script>
+</body>
+</html>
