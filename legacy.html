@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>QLanalyser PC - Legacy Workspace</title>
+  <link rel="icon" href="assets/qlanalyser-logo.png">
+  <link rel="stylesheet" href="legacy.css?v=complete-r6">
+</head>
+<body>
+  <div class="pc-app" id="pc-app" data-build="ql-pc-web-complete-20260731-r15">
+    <header class="window-titlebar">
+      <div class="window-brand">
+        <img src="assets/recommanded.png" alt="">
+        <strong>QLanalyser</strong>
+        <span>EEG / EMG / ECG Research Analysis</span>
+      </div>
+      <div class="window-file" id="window-file">No file loaded</div>
+      <div class="window-controls" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div>
+    </header>
+
+    <nav class="menu-bar" aria-label="QLanalyser 主菜单">
+      <div class="menu-root">
+        <button class="menu-trigger" data-menu="file" type="button" aria-expanded="false">File</button>
+        <div class="menu-popup" role="menu" hidden>
+          <button role="menuitem" type="button" data-action="open-edf">Open edf/bdf file<span>Ctrl+O</span></button>
+          <button role="menuitem" type="button" data-action="open-conversion">Open eeg/acc/tri file</button>
+          <div class="menu-separator"></div>
+          <button role="menuitem" type="button" data-action="save-data" data-needs-file disabled>Save data<span>Ctrl+S</span></button>
+          <button role="menuitem" type="button" data-action="close-file" data-needs-file disabled>Close file</button>
+          <div class="menu-separator"></div>
+          <button role="menuitem" type="button" data-action="exit-app">Exit</button>
+        </div>
+      </div>
+
+      <div class="menu-root">
+        <button class="menu-trigger" data-menu="preprocess" type="button" aria-expanded="false" disabled>Preprocess</button>
+        <div class="menu-popup" role="menu" hidden>
+          <button role="menuitem" type="button" data-action="filter">Filter</button>
+          <button role="menuitem" type="button" data-action="preview-rejection">Preview and Rejection</button>
+          <button role="menuitem" type="button" data-action="data-select">Data Select</button>
+        </div>
+      </div>
+
+      <div class="menu-root">
+        <button class="menu-trigger" data-menu="analysis" type="button" aria-expanded="false" disabled>Analysis</button>
+        <div class="menu-popup analysis-menu" role="menu" hidden>
+          <div class="menu-group-label">Basical analysis</div>
+          <button role="menuitem" type="button" data-action="bandpower">Band Power</button>
+          <button role="menuitem" type="button" data-action="psd">PSD</button>
+          <button role="menuitem" type="button" data-action="time-frequency">Time Frequency</button>
+          <button role="menuitem" type="button" data-action="activity">Activity</button>
+          <div class="menu-separator"></div>
+          <button role="menuitem" type="button" data-action="emg">EMG analysis</button>
+          <button role="menuitem" type="button" data-action="ecg">ECG analysis</button>
+          <button role="menuitem" type="button" data-action="sleep">Sleep analysis</button>
+          <div class="menu-group-label">Epilepsy Analysis</div>
+          <button role="menuitem" type="button" data-action="epilepsy-threshold">Threshold Epilepsy Analysis</button>
+          <button role="menuitem" type="button" data-action="epilepsy-ml">ML Epilepsy Analysis</button>
+          <div class="menu-separator"></div>
+          <button role="menuitem" type="button" data-action="qeeg">qEEG</button>
+        </div>
+      </div>
+
+      <div class="menu-root">
+        <button class="menu-trigger" data-menu="help" type="button" aria-expanded="false">Help</button>
+        <div class="menu-popup" role="menu" hidden>
+          <button role="menuitem" type="button" data-action="about">About</button>
+          <button role="menuitem" type="button" data-action="support">Support</button>
+          <button role="menuitem" type="button" data-action="recommend">Recommand</button>
+          <button role="menuitem" type="button" data-action="open-log">Open the log</button>
+          <div class="menu-separator"></div>
+          <button role="menuitem" type="button" data-action="startup-states">Startup states</button>
+          <button role="menuitem" type="button" data-action="authorization">Authorization state</button>
+          <button role="menuitem" type="button" data-action="update">Check for updates</button>
+          <button role="menuitem" type="button" data-action="prototype-profile">Prototype data profile</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="workspace" id="workspace">
+      <section class="welcome-view" id="welcome-view">
+        <div class="welcome-spacer"></div>
+        <button class="drop-zone" id="drop-zone" type="button">
+          <img src="assets/file.png" alt="">
+          <strong>点击或拖拽文件到此处</strong>
+          <span>支持格式：EDF、BDF</span>
+          <em>或者</em>
+          <b>选择本地文件</b>
+        </button>
+        <div class="welcome-spacer"></div>
+        <p class="resolution-note">*建议分辨率：<strong>1920×1080</strong>。更多系统要求请查看 <button type="button" data-action="recommend">帮助</button>。</p>
+      </section>
+
+      <section class="file-view" id="file-view" hidden>
+        <div class="file-overview">
+          <div class="file-icon"><img src="assets/file.png" alt=""></div>
+          <div><span>Loaded data</span><strong id="loaded-file-name">--</strong><small>EDF/BDF header parsing is not connected in this HTML prototype.</small></div>
+          <button type="button" class="secondary-command" data-action="close-file">Close file</button>
+        </div>
+        <div class="file-metadata-grid">
+          <article><span>Data shape</span><strong id="loaded-data-shape">--</strong></article>
+          <article><span>Duration</span><strong id="loaded-duration">--</strong></article>
+          <article><span>Data size</span><strong id="loaded-data-size">--</strong></article>
+          <article><span>Channels</span><strong id="loaded-channel-count">--</strong></article>
+          <article><span>Channel names</span><strong id="loaded-channel-names">--</strong></article>
+          <article><span>Sampling rate</span><strong id="loaded-sampling-rate">--</strong></article>
+          <article><span>File path</span><strong id="loaded-file-path">Browser-selected file</strong></article>
+          <article><span>Recording start</span><strong id="loaded-recording-start">--</strong></article>
+        </div>
+        <section class="import-preload-contract" data-import-preload-contract aria-label="PC EDF and BDF preload source contract">
+          <header><strong>PC EDF/BDF preload contract</strong><span>Source: Data_Info.py:1587-1660</span></header>
+          <dl>
+            <div><dt>EDF branch</dt><dd><code>read_raw_edf(..., preload=True)</code></dd></div>
+            <div><dt>BDF branch</dt><dd><code>read_raw_bdf(..., preload=True)</code></dd></div>
+            <div><dt>Working units</dt><dd><code>raw._data *= 1e6</code> before the work copy</dd></div>
+            <div><dt>Work copy</dt><dd><code>raw_processed = RawArray(raw._data, raw.info)</code></dd></div>
+            <div><dt>Events</dt><dd><code>raw_processed.set_annotations(raw.annotations)</code></dd></div>
+            <div><dt>Rate rejection</dt><dd><code>sfreq &gt; 1000</code> sets <code>raw = None</code> and <code>raw_processed = None</code></dd></div>
+          </dl>
+          <p><strong>Browser fixture outcome</strong><span id="import-contract-status">Deterministic non-patient fixture only. The browser did not read an EDF/BDF header or samples, did not execute MNE, did not convert units, and did not copy annotations.</span></p>
+        </section>
+        <div class="processing-history" aria-label="Data processing history">
+          <h2>Data processing records</h2>
+          <dl><dt>Filter</dt><dd id="history-filter">None</dd><dt>Data selection</dt><dd id="history-crop">None</dd><dt>Preview and rejection</dt><dd id="history-rejection">None</dd></dl>
+        </div>
+        <div class="workflow-shortcuts" aria-label="常用操作">
+          <button type="button" data-action="filter"><img src="assets/setting.png" alt=""><span><strong>Filter</strong><small>Configure signal filters</small></span></button>
+          <button type="button" data-action="preview-rejection"><img src="assets/Analyse.png" alt=""><span><strong>Preview and Rejection</strong><small>Review epochs and reject artifacts</small></span></button>
+          <button type="button" data-action="data-select"><img src="assets/analysis.png" alt=""><span><strong>Data Select</strong><small>Choose analysis intervals</small></span></button>
+          <button type="button" data-action="qeeg"><img src="assets/analysis.png" alt=""><span><strong>qEEG</strong><small>Open the faithful QEEG workspace</small></span></button>
+        </div>
+        <div class="boundary-note"><strong>Prototype boundary</strong><span>No local EEG samples are read and no analysis algorithm, database write, report export, hardware access, or license operation is performed.</span></div>
+      </section>
+    </main>
+
+    <footer class="status-bar">
+      <span id="status-message">Ready</span>
+      <div data-resource-state="simulated" aria-label="Deterministic simulated resource status"><span id="resource-cpu" data-resource-fixture="deterministic">CPU: 24.0% (SIMULATED)</span><span id="resource-memory" data-resource-fixture="deterministic">Memory: 41.0% (SIMULATED)</span><span>QLanalyser PC 2.0.5.1.beta</span></div>
+    </footer>
+  </div>
+
+  <input id="edf-file-input" type="file" accept=".edf,.bdf" hidden>
+  <input id="conversion-folder-input" type="file" webkitdirectory multiple hidden>
+
+  <div class="window-backdrop" id="module-backdrop" hidden>
+    <section class="module-window" id="module-window" role="dialog" aria-modal="true" aria-labelledby="module-title" tabindex="-1">
+      <header class="module-titlebar">
+        <div><img src="assets/qlanalyser-logo.png" alt=""><strong id="module-title">QLanalyser</strong><span id="module-subtitle"></span></div>
+        <button class="window-close" id="module-close" type="button" aria-label="Close">×</button>
+      </header>
+      <div class="module-body" id="module-body"></div>
+    </section>
+  </div>
+
+  <div class="window-backdrop" id="message-backdrop" hidden>
+    <section class="message-window" role="alertdialog" aria-modal="true" aria-labelledby="message-title" tabindex="-1">
+      <div class="message-copy"><div class="message-icon" id="message-icon">i</div><div><h2 id="message-title">Notice</h2><p id="message-text"></p></div></div>
+      <div class="dialog-actions" id="message-actions"><button class="command primary" type="button" data-message-choice="ok">OK</button></div>
+    </section>
+  </div>
+
+  <div class="toast" id="legacy-toast" role="status" hidden></div>
+  <script src="legacy.js?v=complete-r9"></script>
+</body>
+</html>
