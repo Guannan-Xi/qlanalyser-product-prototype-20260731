@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>QLanalyser PC Web</title>
+  <link rel="icon" href="assets/qlanalyser-logo.png">
+  <link rel="stylesheet" href="styles.css?v=r45">
+</head>
+<body>
+  <div class="app-shell" data-build="ql-pc-web-faithful-20260731-r46">
+    <header class="topbar">
+      <div class="brand" aria-label="QLanalyser">
+        <img class="brand-mark" src="assets/recommanded.png" alt="">
+        <span class="brand-name"><strong>QL</strong>analyser</span>
+      </div>
+      <span class="version">v2.0.5.1.beta</span>
+
+      <nav class="primary-nav" aria-label="主导航">
+        <button class="nav-button is-active" data-page="subjects">受试者数据库</button>
+        <button class="nav-button" data-page="tasks" disabled>任务配置</button>
+        <button class="nav-button" data-page="report" disabled>报告生成</button>
+      </nav>
+
+      <div class="current-subject">
+        <span>当前ID / Current ID</span>
+        <strong id="current-subject-id">None</strong>
+      </div>
+      <div class="top-divider" aria-hidden="true"></div>
+      <button class="logo-setting icon-text-button" type="button" data-open-modal="logo-modal">
+        <img src="assets/setting.png" alt="">
+        <span>Logo 设置<br>Logo Setting</span>
+      </button>
+    </header>
+
+    <div class="persistent-research-warning" id="persistent-research-warning" role="note">
+      <strong>SIMULATED / NOT PATIENT DATA</strong>
+      <span>非患者数据 · 未运行算法 · 仅供研究与交互原型验证 · 非诊断用途，不用于治疗或临床决策。</span>
+    </div>
+
+    <main>
+      <section class="page is-active" id="page-subjects" aria-labelledby="subject-page-title">
+        <div class="page-heading">
+          <div>
+            <h1 id="subject-page-title">受试者数据库</h1>
+            <p>Subject Database Management</p>
+          </div>
+          <button class="primary-button" id="open-subject-create" type="button">
+            <img src="assets/add_subject.png" alt="">
+            新建受试者档案
+          </button>
+        </div>
+
+        <div class="database-panel">
+          <label class="search-box">
+            <img src="assets/search.png" alt="">
+            <input id="subject-search" type="search" maxlength="50" placeholder="按ID/姓名查找" autocomplete="off">
+          </label>
+
+          <div class="table-wrap">
+            <table class="subject-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>姓名</th>
+                  <th><button class="sort-button" type="button" data-sort="age">年龄 <span>↕</span></button></th>
+                  <th>性别</th>
+                  <th><button class="sort-button" type="button" data-sort="date">录入日期 <span>↕</span></button></th>
+                  <th>身高(cm)</th>
+                  <th>体重(kg)</th>
+                  <th><button class="sort-button" type="button" data-sort="bmi">BMI <span>↕</span></button></th>
+                  <th>采集人</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="subject-table-body"></tbody>
+            </table>
+            <div class="empty-state" id="subject-empty" hidden>
+              <img src="assets/empty_icon.png" alt="">
+              <p>暂无被试者信息，请先新建受试者档案</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pagination" aria-label="分页">
+          <button class="page-control" id="page-prev" type="button" disabled>上一页</button>
+          <label for="page-input">第</label>
+          <input id="page-input" type="number" min="1" value="1" inputmode="numeric">
+          <span>页 / 共 <strong id="page-total">1</strong> 页</span>
+          <button class="page-control" id="page-jump" type="button" disabled>跳转</button>
+          <button class="page-control" id="page-next" type="button" disabled>下一页</button>
+        </div>
+      </section>
+
+      <section class="page task-page" id="page-tasks" aria-label="任务配置">
+        <aside class="task-sidebar">
+          <div class="subject-summary">
+            <div class="subject-summary-title">
+              <strong id="task-subject-name">--</strong>
+              <span id="task-subject-code">--</span>
+            </div>
+            <div class="subject-tags">
+              <span id="task-subject-gender">--</span>
+              <span id="task-subject-age">--</span>
+              <span id="task-subject-bmi">BMI --</span>
+            </div>
+          </div>
+
+          <div class="sidebar-separator"></div>
+
+          <div class="task-flow">
+            <div class="task-flow-title">
+              <strong>任务流</strong>
+              <button class="new-task-button" id="new-task-button" type="button">
+                <img src="assets/new.png" alt="">新建
+              </button>
+            </div>
+            <div class="template-buttons">
+              <button type="button" id="load-template"><img src="assets/load.png" alt="">载入模板</button>
+              <button type="button" id="save-template"><img src="assets/save.png" alt="">保存模板</button>
+            </div>
+            <div class="sidebar-separator"></div>
+            <div class="task-list" id="task-list"></div>
+          </div>
+
+          <div class="sidebar-separator"></div>
+          <button class="generate-report-button" id="generate-report" type="button">
+            <img src="assets/analysis.png" alt="">生成报告
+          </button>
+        </aside>
+
+        <div class="vertical-separator" aria-hidden="true"></div>
+
+        <section class="task-workspace" id="task-empty-state">
+          <div class="task-empty">
+            <img src="assets/empty_task.png" alt="">
+            <p>Select a task to configure</p>
+          </div>
+        </section>
+
+        <section class="task-editor" id="task-editor" hidden>
+          <aside class="method-panel">
+            <div class="method-panel-scroll">
+            <div class="config-card">
+              <h2>方法配置</h2>
+              <label for="task-name">任务命名</label>
+              <input id="task-name" type="text" maxlength="100">
+              <label id="analysis-method-label">分析方法</label>
+              <input id="analysis-method" type="hidden" value="Peak Alpha Frequency">
+              <div class="method-combobox">
+                <button class="method-trigger" id="analysis-method-trigger" type="button" role="combobox" aria-labelledby="analysis-method-label" aria-controls="method-options" aria-expanded="false">
+                  <span class="method-chinese">α波峰值频率</span>
+                  <span class="method-english">Peak Alpha Frequency (PAF)</span>
+                </button>
+                <div class="method-options" id="method-options" role="listbox" aria-labelledby="analysis-method-label" hidden>
+                  <button type="button" role="option" data-method="Peak Alpha Frequency"><span>α波峰值频率</span><small>Peak Alpha Frequency (PAF)</small></button>
+                  <button type="button" role="option" data-method="Power Spectral Density"><span>功率谱密度</span><small>Power Spectral Density (PSD)</small></button>
+                  <button type="button" role="option" data-method="Theta/Beta Ratio"><span>θ/β 比值 (Theta/Beta 比率)</span><small>Theta/Beta Ratio (TBR)</small></button>
+                  <button type="button" role="option" data-method="Z-Score Analysis"><span>Z分数分析 (标准化评分分析)</span><small>Z-Score Analysis</small></button>
+                  <button type="button" role="option" data-method="Full-Band Power Distribution"><span>全频段功率分布</span><small>Full-Band Power Distribution</small></button>
+                  <button type="button" role="option" data-method="Full-Band Ratio Distribution"><span>全频段比率分布</span><small>Full-Band Ratio Distribution</small></button>
+                  <button type="button" role="option" data-method="alpha Ratio(EC/EO)"><span>Alpha 抑制指数</span><small>Alpha Ratio (EC/EO)</small></button>
+                  <button type="button" role="option" data-method="Frontal Alpha Asymmetry"><span>前额 Alpha 不对称性</span><small>Frontal Alpha Asymmetry (FAA)</small></button>
+                  <button type="button" role="option" data-method="Report Output"><span>报告总结编辑区</span><small>Report Output</small></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="config-card analysis-window-card">
+              <h2>分析窗口定义</h2>
+              <div class="segment-switch" id="segment-switch" aria-hidden="true">
+                <button class="segment-button segment-one is-active" type="button" data-segment="1">● 分段 1 (分子)</button>
+                <button class="segment-button segment-two" type="button" data-segment="2">● 分段 2 (分母)</button>
+              </div>
+              <div class="field-pair">
+                <label>Start (s)<input id="window-start" type="number" value="0" min="0" max="36000" step="1"></label>
+                <label>Duration (s)<input id="window-duration" type="number" value="120" min="1" max="36000" step="1"></label>
+              </div>
+              <div class="selection-summary" id="selection-summary" hidden>Selection: 60 Sec</div>
+              <div class="card-divider"></div>
+              <h3 class="event-anchor-title">选择事件锚点</h3>
+              <div class="event-anchor-list" role="listbox" aria-label="选择事件锚点" aria-disabled="true">
+                <div class="event-anchor-empty">未载入事件标记</div>
+              </div>
+            </div>
+
+            <div class="config-card task-simulation-card" id="task-simulation-card">
+              <div class="simulation-card-heading"><h2>任务运行模拟</h2><span class="simulation-only-badge">SIMULATED</span></div>
+              <p id="task-simulation-disclaimer">仅演示运行状态，不调用真实算法，不读取患者数据。</p>
+              <div class="simulation-state-row">
+                <span class="simulation-state is-idle" id="task-run-state" data-state="idle">空闲</span>
+                <strong id="task-run-detail">等待确认配置后开始模拟</strong>
+              </div>
+              <div class="simulation-progress" id="task-run-progress" role="progressbar" aria-label="任务模拟进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+              <label class="simulation-outcome-label">本次模拟结果
+                <select id="task-simulation-outcome"><option value="success">成功</option><option value="failure">失败</option></select>
+              </label>
+              <div class="simulation-actions">
+                <button class="primary-button" id="start-task-simulation" type="button" disabled>开始模拟</button>
+                <button class="secondary-button" id="cancel-task-simulation" type="button" disabled>取消</button>
+              </div>
+            </div>
+            </div>
+
+            <button class="confirm-config-button" type="button" id="confirm-config">确认配置</button>
+          </aside>
+
+          <div class="signal-panel">
+            <section class="filter-card">
+              <div class="filter-title-row">
+                <h2>滤波器</h2>
+                <label class="quick-bandpass">QUICK BANDPASS:
+                  <select id="bandpass">
+                    <option>Delta (0.5-4.0Hz)</option>
+                    <option>Theta (4.0-8.0Hz)</option>
+                    <option>Alpha (8.0-13.0Hz)</option>
+                    <option>SMR (12.0-15.0Hz)</option>
+                    <option>Beta (13.0-30.0Hz)</option>
+                    <option selected>Custom (0.5-30.0Hz)</option>
+                  </select>
+                </label>
+              </div>
+              <div class="filter-controls">
+                <label class="filter-control"><input id="highpass-enabled" type="checkbox" checked><span class="switch" aria-hidden="true"></span><strong>High-pass</strong><input id="highpass-value" type="number" value="1.0" min="0.1" max="100" step="0.1"><em>Hz</em></label>
+                <label class="filter-control"><input id="lowpass-enabled" type="checkbox" checked><span class="switch" aria-hidden="true"></span><strong>Low-pass</strong><input id="lowpass-value" type="number" value="35.0" min="0.1" max="200" step="0.1"><em>Hz</em></label>
+                <label class="filter-control"><input id="notch-enabled" type="checkbox" checked><span class="switch" aria-hidden="true"></span><strong>Notch</strong><input id="notch-value" type="number" value="50.0" min="0.1" max="200" step="0.1"><em>Hz</em></label>
+              </div>
+            </section>
+
+            <section class="waveform-card">
+              <div class="waveform-toolbar">
+                <div class="waveform-actions">
+                  <label>X轴缩放：
+                    <select id="x-axis-scale">
+                      <option>Auto</option><option>5 秒/页</option><option>10 秒/页</option><option>15 秒/页</option><option>20 秒/页</option><option>30 秒/页</option><option>60 秒/页</option><option>15 分钟/页</option><option>20 分钟/页</option><option>1 小时/页</option>
+                    </select>
+                  </label>
+                  <label>Y轴缩放：
+                    <select id="y-axis-scale">
+                      <option>Auto</option><option>10000 uV</option><option>5000 uV</option><option>2000 uV</option><option>1000 uV</option><option>500 uV</option><option>200 uV</option><option>100 uV</option><option>50 uV</option><option>20 uV</option><option>10 uV</option><option>5 uV</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="waveform-placeholder" aria-label="波形预览占位">
+                <div class="wave-grid"></div>
+                <div class="waveform-message">
+                  <img src="assets/file.png" alt="">
+                  <strong>等待受试者数据</strong>
+                  <span>Web 化原型不读取本机真实脑电文件</span>
+                </div>
+              </div>
+              <div class="waveform-footer is-auto" id="waveform-time-ruler" aria-label="X轴范围：自动"><span>Auto</span></div>
+              <div class="waveform-scrollbar" id="waveform-scrollbar" role="scrollbar" aria-label="X轴滚动" aria-disabled="true"><span></span></div>
+            </section>
+            <div class="waveform-time-info" aria-label="当前分析时间信息">
+              <div><span>START</span><strong id="waveform-start-time">0:00</strong></div>
+              <div><span>END</span><strong id="waveform-end-time">2:00</strong></div>
+              <div class="waveform-total"><span>TOTAL DURATION</span><strong id="waveform-total-time">120.0 Sec</strong></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="page report-page" id="page-report" aria-labelledby="report-page-title">
+        <section class="report-batch-panel" id="report-batch-panel" aria-label="报告生成批处理模拟">
+          <div class="report-batch-heading">
+            <div><strong>报告生成批处理</strong><p>PC 在点击“生成报告”后统一执行已确认方法；这里仅模拟流程与失败门禁，不运行算法。</p></div>
+            <span class="simulation-only-badge">SIMULATED</span>
+          </div>
+          <div class="report-batch-controls">
+            <label>确定性输入场景
+              <select id="report-batch-scenario">
+                <option value="success">全部前提满足</option>
+                <optgroup label="PAF 通道前提">
+                  <option value="paf-o1-missing">缺少 O1</option>
+                  <option value="paf-o2-missing">缺少 O2</option>
+                </optgroup>
+                <optgroup label="TBR 通道前提">
+                  <option value="tbr-fz-missing">缺少 Fz</option>
+                  <option value="tbr-cz-missing">缺少 Cz</option>
+                </optgroup>
+                <optgroup label="FAA 通道前提">
+                  <option value="faa-f3-missing">缺少 F3</option>
+                  <option value="faa-f4-missing">缺少 F4</option>
+                </optgroup>
+                <optgroup label="Alpha Ratio 前提">
+                  <option value="alpha-o1-missing">缺少 O1</option>
+                  <option value="alpha-o2-missing">缺少 O2</option>
+                  <option value="alpha-condition-missing">缺少 EC / EO 条件</option>
+                  <option value="alpha-event-missing">事件锚点不可用</option>
+                </optgroup>
+                <optgroup label="Z-Score 前提">
+                  <option value="zscore-age-missing">年龄缺失</option>
+                  <option value="zscore-age-range">年龄超出 5–87</option>
+                  <option value="zscore-condition-missing">条件未明确</option>
+                  <option value="zscore-model-missing">模型未明确</option>
+                  <option value="zscore-correction-missing">PG / RD 未明确</option>
+                  <option value="zscore-norms-missing">常模文件不可用</option>
+                  <option value="zscore-license-unverified">常模许可未验证</option>
+                </optgroup>
+              </select>
+            </label>
+            <div class="report-batch-state-copy">
+              <span class="simulation-state is-idle" id="report-batch-state" data-state="idle">空闲</span>
+              <strong id="report-batch-detail">等待开始报告批处理模拟</strong>
+            </div>
+            <div class="report-batch-actions">
+              <button class="primary-button" id="start-report-batch" type="button" disabled>开始报告批处理</button>
+              <button class="secondary-button" id="cancel-report-batch" type="button" disabled>取消</button>
+            </div>
+          </div>
+          <div class="simulation-progress" id="report-batch-progress" role="progressbar" aria-label="报告批处理模拟进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+          <div class="report-method-statuses" id="report-method-statuses" aria-label="逐方法批处理状态"></div>
+          <p class="report-batch-boundary">“Report Output”只控制综合评估页面，不计入算法计算项。常模许可的“通过”仅为门禁模拟，不代表真实授权已经确认。</p>
+          <section class="report-assembly-contract" data-report-assembly-contract aria-label="PC dynamic report assembly source contract">
+            <strong>PC dynamic report assembly contract</strong>
+            <span>Source: <code>src/Analyze_report_pro.py:3223-4338</code></span>
+            <p><code>build(algo_results)</code> counts <code>psd_data</code>, <code>zscore_data</code>, <code>full_band_mapping_data</code>, and <code>ratio_mapping_data</code>; core cards keep the order PAF → TBR → FAA → Alpha Ratio with six cards per page. <code>show_report_output</code> independently controls the final assessment page.</p>
+            <em>Browser boundary: this deterministic fixture does not execute qEEG algorithms and does not generate a real report or file.</em>
+          </section>
+        </section>
+        <div class="report-empty" id="report-empty-state">
+          <img src="assets/qlanalyser-logo.png" alt="QLanalyser">
+          <h1 id="report-page-title">报告生成</h1>
+          <p id="report-status">请先选择受试者并完成至少一个任务配置</p>
+          <div class="report-empty-actions"><button class="secondary-button" type="button" data-page-jump="tasks">返回任务配置</button><button class="primary-button" type="button" id="build-report-preview" disabled>开始报告批处理模拟</button></div>
+        </div>
+        <div class="report-workspace" id="report-workspace" hidden>
+          <aside class="report-outline"><header><strong>报告页面</strong><span>Report Pages · 按已确认任务生成</span></header><nav id="report-outline-sections" aria-label="报告页面目录"></nav><div class="report-history"><strong>历史报告</strong><button id="open-report-history">打开历史记录</button></div></aside>
+          <section class="report-preview-panel">
+            <div class="report-toolbar"><div><strong id="report-preview-title">QLanalyser QEEG Report</strong><span id="report-save-state">评论已保存</span></div><div><button class="secondary-button" id="save-report-comment" type="button">保存评论</button><button class="secondary-button" id="print-report" type="button">打印 / 保存为 PDF</button></div></div>
+            <div class="report-scroll-area">
+              <section class="pdf-simulation-panel" id="pdf-simulation-panel" hidden aria-label="PDF 导出模拟">
+                <div class="simulation-card-heading"><div><strong>PDF 导出状态模拟</strong><p>不调用打印接口，不创建或写入任何文件。</p></div><span class="simulation-only-badge">SIMULATED</span></div>
+                <label>模拟路径（不会创建文件）<input id="pdf-simulated-path" type="text" readonly></label>
+                <div class="pdf-simulation-controls">
+                  <label>本次模拟结果<select id="pdf-simulation-outcome"><option value="success">成功</option><option value="failure">失败</option></select></label>
+                  <span class="simulation-state is-idle" id="pdf-simulation-state" data-state="idle">空闲 · 未创建文件</span>
+                </div>
+                <div class="simulation-progress" id="pdf-simulation-progress" role="progressbar" aria-label="PDF 模拟进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+                <div class="simulation-actions"><button class="primary-button" id="start-pdf-simulation" type="button">开始模拟</button><button class="secondary-button" id="cancel-pdf-simulation" type="button" disabled>取消</button></div>
+              </section>
+              <article class="report-paper"><div class="report-paper-brand"><img id="report-logo-preview" src="assets/qlanalyser-logo.png" alt="QLanalyser"><span>Research analysis report preview</span></div><h1 id="report-section-title">封面与受试者信息</h1><p class="report-prototype-warning"><strong>SIMULATED / NOT PATIENT DATA</strong> · 非患者数据，未运行算法；仅供研究与交互验证，不构成诊断或临床建议。</p><div class="report-section-content" id="report-section-content" aria-live="polite"></div><label class="report-comment-label">综合评估与建议<textarea id="report-comment" maxlength="2000" placeholder="报告评论仅保存在当前浏览器原型内存中"></textarea></label><p class="report-ai-warning">评估内容由 AI 生成时应仔细甄别。本原型未调用任何 AI 或报告算法。</p></article>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="subject-modal" hidden>
+    <div class="modal subject-profile-modal" role="dialog" aria-modal="true" aria-labelledby="subject-modal-title" tabindex="-1">
+      <div class="modal-header">
+        <div><h2 id="subject-modal-title">受试者档案录入</h2></div>
+        <button class="icon-button close-modal" type="button" aria-label="关闭">×</button>
+      </div>
+      <form id="subject-form">
+        <input id="subject-form-mode" type="hidden" value="create">
+        <div class="subject-form-columns">
+          <div class="subject-form-column">
+            <label>姓名<span>*</span><input name="name" required minlength="2" maxlength="20" autocomplete="off"></label>
+            <label>年龄<span>*</span><input name="age" required type="number" min="0" max="150" step="1"></label>
+            <label>身高(cm)<span>*</span><input name="height" required type="number" min="30" max="250" step="0.1"></label>
+            <fieldset class="gender-field"><legend>性别<span>*</span></legend><div><label><input type="radio" name="gender" value="男" checked>男 ♂</label><label><input type="radio" name="gender" value="女">女 ♀</label><label><input type="radio" name="gender" value="不便透露">不便透露</label></div></fieldset>
+          </div>
+          <div class="subject-form-column">
+            <label>ID<span>*</span><input name="id" required maxlength="10" pattern="[A-Za-z0-9]+" placeholder="请输入ID（仅限字母和数字，最多10位）" autocomplete="off"></label>
+            <label>体重(kg)<span>*</span><input name="weight" required type="number" min="2" max="300" step="0.1"></label>
+            <label>BMI<input name="bmi" type="text" readonly tabindex="-1"></label>
+            <label>采集人<input name="collector" maxlength="60" autocomplete="off"></label>
+          </div>
+        </div>
+        <label class="remark-field">备注<textarea name="remark" maxlength="500" placeholder="请输入额外备注信息, 字数上限500（选填）"></textarea></label>
+        <button class="subject-submit-button" id="subject-submit-button" type="submit">确认添加</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="history-modal" hidden>
+    <div class="modal history-modal" role="dialog" aria-modal="true" aria-labelledby="history-modal-title" tabindex="-1">
+      <div class="modal-header"><h2 id="history-modal-title">历史分析记录</h2><button class="icon-button close-modal" type="button" aria-label="关闭">×</button></div>
+      <div class="history-subject-info" id="history-subject-info"></div>
+      <div class="history-empty-state"><img src="assets/empty_icon.png" alt=""><strong>暂无历史分析记录</strong></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="subject-delete-modal" hidden>
+    <div class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="subject-delete-title" tabindex="-1">
+      <div class="confirm-modal-content"><h2 id="subject-delete-title">确认删除受试者数据?</h2><p id="subject-delete-message"></p></div>
+      <div class="modal-actions"><button class="primary-button close-modal" type="button" data-default-focus>否</button><button class="secondary-button" id="confirm-subject-delete" type="button">是</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="task-delete-modal" hidden>
+    <div class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="task-delete-title" tabindex="-1">
+      <div class="confirm-modal-content"><h2 id="task-delete-title">确认删除</h2><p id="task-delete-message"></p></div>
+      <div class="modal-actions"><button class="primary-button close-modal" type="button" data-default-focus>否</button><button class="secondary-button" id="confirm-task-delete" type="button">是</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="report-blocked-modal" hidden>
+    <div class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="report-blocked-title" tabindex="-1">
+      <div class="confirm-modal-content"><h2 id="report-blocked-title">提示</h2><p id="report-blocked-message"></p></div>
+      <div class="modal-actions"><button class="primary-button close-modal" type="button">确定</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="logo-modal" hidden>
+    <div class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="logo-modal-title" tabindex="-1">
+      <div class="modal-header"><div><h2 id="logo-modal-title">Logo Setting</h2><p>报告 Logo 设置</p></div><button class="icon-button close-modal" type="button" aria-label="关闭">×</button></div>
+      <div class="logo-upload-area"><img id="logo-setting-preview" src="assets/qlanalyser-logo.png" alt="当前 Logo"><p>当前报告 Logo</p><input id="logo-file-input" type="file" accept="image/png,image/jpeg" hidden><div><button class="secondary-button" type="button" id="choose-logo">选择图片</button><button class="secondary-button" type="button" id="clear-logo">清除</button></div></div>
+      <div class="modal-actions"><button class="primary-button close-modal" type="button">完成</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="report-pdf-modal" hidden>
+    <div class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="report-pdf-title" tabindex="-1"><div class="confirm-modal-content"><h2 id="report-pdf-title">评论尚未保存</h2><p>继续导出会丢弃当前未保存评论。返回保存，还是继续进入 PDF 导出状态？</p></div><div class="modal-actions"><button class="primary-button close-modal" type="button">返回保存</button><button class="secondary-button" id="confirm-report-pdf" type="button">继续导出</button></div></div>
+  </div>
+
+  <div class="modal-backdrop" id="report-history-modal" hidden>
+    <div class="modal history-modal" role="dialog" aria-modal="true" aria-labelledby="report-history-title" tabindex="-1"><div class="modal-header"><h2 id="report-history-title">历史报告</h2><button class="icon-button close-modal" type="button" aria-label="关闭">×</button></div><div class="history-empty-state" id="report-history-content"><img src="assets/history_record.png" alt=""><strong>当前原型会话暂无持久化历史报告</strong><span>PC HistoryTask / SQLite 未接入浏览器</span></div></div>
+  </div>
+
+  <div class="modal-backdrop" id="template-load-modal" hidden>
+    <div class="modal template-load-modal" role="dialog" aria-modal="true" aria-labelledby="template-load-title" tabindex="-1">
+      <div class="modal-window-titlebar"><span>载入模板</span><button class="icon-button close-modal" type="button" aria-label="关闭">×</button></div>
+      <div class="template-dialog-content">
+        <h2 id="template-load-title">模板列表</h2>
+        <div class="template-list" aria-label="模板条目列表">
+          <div class="template-empty-state"><img src="assets/file.png" alt=""><strong>未接入模板数据</strong><span>Web 化原型不读取 PC 模板数据库</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="template-save-modal" hidden>
+    <div class="modal template-save-modal" role="dialog" aria-modal="true" aria-labelledby="template-save-title" tabindex="-1">
+      <div class="modal-window-titlebar"><span>保存为新模板</span><button class="icon-button close-modal" type="button" aria-label="关闭">×</button></div>
+      <form id="template-save-form">
+        <div class="template-save-heading"><img src="assets/file.png" alt=""><h2 id="template-save-title">保存为新模板</h2></div>
+        <label for="template-name">模板名称</label>
+        <input id="template-name" name="template-name" required maxlength="100" placeholder="e.g. 儿童注意力分析模版">
+        <div class="modal-actions"><button class="secondary-button close-modal" type="button">取消</button><button class="primary-button" type="submit">保存</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="app.js?v=r45"></script>
+</body>
+</html>
